@@ -1,0 +1,52 @@
+# Customer Churn Prediction Example
+# ---------------------------------
+
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
+from sklearn.metrics import classification_report, confusion_matrix
+
+# 1. Load dataset (replace with your dataset path)
+# Example: Telco Customer Churn dataset from Kaggle
+df = pd.read_csv("customer_churn.csv")
+
+# 2. Encode categorical variables
+for col in df.select_dtypes(include=['object']).columns:
+    df[col] = LabelEncoder().fit_transform(df[col])
+
+# 3. Features and target
+X = df.drop("Churn", axis=1)   # all features
+y = df["Churn"]                # target: 0 = stay, 1 = churn
+
+# 4. Train-test split
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42, stratify=y
+)
+
+# 5. Feature scaling
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+# 6. Logistic Regression
+lr = LogisticRegression(max_iter=200)
+lr.fit(X_train_scaled, y_train)
+y_pred_lr = lr.predict(X_test_scaled)
+print("Logistic Regression:\n", classification_report(y_test, y_pred_lr))
+
+# 7. Random Forest
+rf = RandomForestClassifier(n_estimators=100)
+rf.fit(X_train, y_train)
+y_pred_rf = rf.predict(X_test)
+print("Random Forest:\n", classification_report(y_test, y_pred_rf))
+
+# 8. Gradient Boosting
+gb = GradientBoostingClassifier()
+gb.fit(X_train, y_train)
+y_pred_gb = gb.predict(X_test)
+print("Gradient Boosting:\n", classification_report(y_test, y_pred_gb))
+
+# 9. Confusion Matrix Example
+print("Confusion Matrix (Random Forest):\n", confusion_matrix(y_test, y_pred_rf))
