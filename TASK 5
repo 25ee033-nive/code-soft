@@ -1,0 +1,51 @@
+# Movie Genre Classification Example
+# ----------------------------------
+
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.linear_model import LogisticRegression
+from sklearn.svm import LinearSVC
+from sklearn.metrics import classification_report
+
+# 1. Load dataset (replace with your dataset path)
+# Example CSV should have columns: 'title', 'plot', 'genre'
+df = pd.read_csv("movies.csv")
+
+# 2. Features and labels
+X = df['plot']        # movie plot summaries
+y = df['genre']       # genre labels
+
+# 3. Train-test split
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42, stratify=y
+)
+
+# 4. Text vectorization using TF-IDF
+vectorizer = TfidfVectorizer(stop_words='english', max_features=5000)
+X_train_tfidf = vectorizer.fit_transform(X_train)
+X_test_tfidf = vectorizer.transform(X_test)
+
+# 5. Naive Bayes Classifier
+nb_model = MultinomialNB()
+nb_model.fit(X_train_tfidf, y_train)
+y_pred_nb = nb_model.predict(X_test_tfidf)
+print("Naive Bayes Results:\n", classification_report(y_test, y_pred_nb))
+
+# 6. Logistic Regression Classifier
+lr_model = LogisticRegression(max_iter=200)
+lr_model.fit(X_train_tfidf, y_train)
+y_pred_lr = lr_model.predict(X_test_tfidf)
+print("Logistic Regression Results:\n", classification_report(y_test, y_pred_lr))
+
+# 7. Support Vector Machine Classifier
+svm_model = LinearSVC()
+svm_model.fit(X_train_tfidf, y_train)
+y_pred_svm = svm_model.predict(X_test_tfidf)
+print("SVM Results:\n", classification_report(y_test, y_pred_svm))
+
+# 8. Example prediction
+sample_plot = ["A young wizard attends a magical school and battles dark forces."]
+sample_tfidf = vectorizer.transform(sample_plot)
+print("Predicted genre:", svm_model.predict(sample_tfidf)[0])
